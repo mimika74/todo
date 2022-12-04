@@ -1,4 +1,6 @@
 <script setup lang='ts'>
+import { Task } from '~/@types/firestore'
+
 interface todo {
   message: string
 }
