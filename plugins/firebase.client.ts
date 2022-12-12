@@ -3,6 +3,7 @@ import { defineNuxtPlugin } from '#app'
 
 export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig()
+
   const firebaseConfig = {
     apiKey: runtimeConfig.public.firebaseConfig.apiKey,
     authDomain: runtimeConfig.public.firebaseConfig.authDomain,

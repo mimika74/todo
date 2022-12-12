@@ -1,7 +1,8 @@
 <script setup lang='ts'>
 import { getFirestore, collection } from 'firebase/firestore'
-import { CollectionReference, doc, getDoc, getDocs } from '@firebase/firestore'
+import { CollectionReference, doc, getDoc, getDocs, addDoc, onSnapshot } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
+import { onMounted } from 'vue'
 
 //firebaseと接続する
 const runtimeConfig = useRuntimeConfig()
@@ -41,6 +42,15 @@ const tasksDocs = await getDocs(TaskRef)
 const tasksAllData = tasksDocs.docs.map((doc) => doc.data())
 //console.log(tasksAllData)
 
+//onSnapshotを使ってリアルタイム更新(できればやりたい)
+// const q = collection(db, 'tasks')
+// const tasksAllData = onSnapshot(q, (doc) => {
+//   doc.docs.map((doc) => doc.data())
+//   })
+
+
+
+//const tasksAllDataRef = ref(tasksAllData)
 
 //データを追加する時に使う
 const task = ref<Task>({
@@ -50,15 +60,29 @@ const task = ref<Task>({
   person: '',
 })
 
-const onSubmit = async () => {
-  //await addTask(task)
+const taskDoc = collection(
+    firestore,
+    'tasks'
+)
+const addTask = async(task: Task) => {
+    await addDoc(taskDoc, {
+    category: task.category,
+    title: task.title,
+    detail: task.detail,
+    person: task.person
+  })
+}
+
+const onClick = () => {
+  addTask(task.value)
+  console.log(task.value)
 }
 
 </script>
 
 <template>
   <div>
-    <form @submit.prevent='onSubmit'>
+    <form @submit.prevent='onClick'>
       <div>カテゴリー<input type='text' v-model='task.category' /></div>
       <div>タイトル<input type='text' v-model='task.title' /></div>
       <div>詳細<input type='text' v-model='task.detail' /></div>
