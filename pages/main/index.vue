@@ -1,23 +1,7 @@
 <script setup lang='ts'>
-import { getFirestore, collection } from 'firebase/firestore'
-import { CollectionReference, doc, getDocs, addDoc, onSnapshot, updateDoc, deleteDoc } from '@firebase/firestore'
-import { initializeApp } from "firebase/app";
+const { getTask, getDocIds, getTasks, updateTask, deleteTask } = useFirestore()
 
 
-//firebaseと接続する
-const runtimeConfig = useRuntimeConfig()
-const firebaseConfig = {
-  apiKey: runtimeConfig.public.firebaseConfig.apiKey,
-  authDomain: runtimeConfig.public.firebaseConfig.authDomain,
-  projectId: runtimeConfig.public.firebaseConfig.projectId,
-  storageBucket: runtimeConfig.public.firebaseConfig.storageBucket,
-  messagingSenderId: runtimeConfig.public.firebaseConfig.messagingSenderId,
-  appId: runtimeConfig.public.firebaseConfig.appId,
-}
-const firebaseApp = initializeApp(firebaseConfig)
-const firestore = getFirestore(firebaseApp)
-
-//⓪取得するデータの方を用意する
 type Task = {
   category: string
   person: string
@@ -26,144 +10,114 @@ type Task = {
   id: string
 }
 
-//①firestoreからデータを取得する
-const TaskRef = collection(
-    firestore,
-    'tasks'
-) as CollectionReference<Task>
 
-//②一つのドキュメントを取得する時
-//const TaskRefId1 = doc(TaskRef, 'upuO8Oq5sLxzQd0p4uKg')
-//const tasksDocId1 = await getDoc(TaskRefId1)
-//const tasksDataId1 = tasksDocId1.data()
-//console.log(tasksDataId1)
-
-//②複数のドキュメントを取得する時
-const tasksDocs = await getDocs(TaskRef)
-const tasksAllData = tasksDocs.docs.map((doc) => doc.data())
-//console.log(tasksAllData)
-//console.log(tasksDocs.docs[1].id)
-
-//onSnapshotを使ってリアルタイム更新(できればやりたい)
-// const q = collection(db, 'tasks')
-// const tasksAllData = onSnapshot(q, (doc) => {
-//   doc.docs.map((doc) => doc.data())
-//   })
-
-
+const tasksAllData = await getTasks()
 const tasksAllDataRef = ref(tasksAllData)
-
-//データを追加する時に使う
-const task = ref<Task>({
-  category: '',
-  title: '',
-  detail: '',
-  person: '',
-  id: '',
-})
-
-const taskDoc = collection(
-    firestore,
-    'tasks'
-)
-const db = getFirestore()
-const addTask = async(task: Task) => {
-  //taskDocId変数->ドキュメントの中に自動生成IDを格納したいので、事前にIDを取得しておく
-  const taskDocId = doc(taskDoc).id
-    await addDoc(taskDoc, {
-    category: task.category,
-    title: task.title,
-    detail: task.detail,
-    person: task.person,
-    id: taskDocId
-  })
-  //console.log(taskDocId)
-}
-
-const Create = () => {
-  addTask(task.value)
-}
-
-//第1引数(firestore または db) 第2引数(コレクション名)、第3引数(自動生成id)
-//第3引数は、ドキュメントのフィールドに自動生成IDを入れて、紐付けることにした(やむなく)
-const updateTask = async(taskArg: Task) => {
-  const taskDataRef = doc(db, 'tasks', taskArg.id)
-  await updateDoc(taskDataRef, {
-    title: taskArg.title,
-    category: taskArg.category,
-    detail: taskArg.detail,
-    person: taskArg.person,
-  })
-}
-
-const deleteTask = async(taskArg: Task) => {
-  await deleteDoc(doc(db,'tasks', taskArg.id))
-}
 
 //本当はフィールドにドキュメントid入れるのよくないけど、updateとdeleteの時に第三引数が取り出しやすくなった
 const doUpdate = (taskArg: Task) => {
   return updateTask(taskArg)
 }
-const doDelete = async(taskArg: Task) => {
-  await deleteTask(taskArg)
+const doDelete = async (taskArg: Task) => {
+  return deleteTask(taskArg)
 }
 
+const isShow = ref(false)
+const isAddShow = ref(false)
+
+const taskDetail = ref<Task>()
+
+const open = (taskArg: Task) => {
+  isShow.value = true
+  taskDetail.value = taskArg
+}
+
+const close = () => isShow.value = false
+
+const openAddModal = () => {
+  isAddShow.value = true
+
+}
+const closeAddModal = () => {
+  isAddShow.value = false
+
+}
 </script>
 
 <template>
   <div>
-    <form @submit.prevent='Create'>
-      <div>カテゴリー<input type='text' v-model='task.category' /></div>
-      <div>タイトル<input type='text' v-model='task.title' /></div>
-      <div>詳細<input type='text' v-model='task.detail' /></div>
-      <div>担当者<input type='text' v-model='task.person' /></div>
-      <button>保存する</button>
-    </form>
-    <table>
-      <tbody>
-      <tr>
-        <th>
-          ID
-        </th>
-        <th>
-          カテゴリー
-        </th>
-        <th>
-          タイトル
-        </th>
-        <th>
-          詳細
-        </th>
-        <th>
-          担当者
-        </th>
-        <th></th>
-        <th></th>
-      </tr>
-      <tr v-for='taskArg in tasksAllDataRef'>
-        <td>
-          {{ taskArg.id }}
-        </td>
-        <td>
-          <input type='text' v-model='taskArg.category'>
-        </td>
-        <td>
-          <input type='text' v-model='taskArg.title'>
-        </td>
-        <td>
-          <input type='text' v-model='taskArg.detail'>
-        </td>
-        <td>
-          <input type='text' v-model='taskArg.person'>
-        </td>
-        <td>
-          <button @click='doUpdate(taskArg)'>更新</button>
-        </td>
-        <td>
-          <button type='button' @click='doDelete(taskArg)'>削除</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <button @click='openAddModal()'>新規登録</button>
+    <AddModal v-if='isAddShow'>
+      <div>
+        <AddTask />
+        <button @click='closeAddModal()'>close</button>
+      </div>
+    </AddModal>
+
+    <div>
+      <div v-for='taskArg in tasksAllDataRef' class="inline-block" :key='taskArg.id'>
+        <p>
+
+        </p>
+        <p>
+          {{ taskArg.category }}
+        </p>
+        <p>
+          {{ taskArg.title }}
+        </p>
+        <p>
+         {{ taskArg.detail }}
+        </p>
+        <p>
+          {{ taskArg.person }}
+        </p>
+        <p>
+          <button @click='open(taskArg)'>編集</button>
+        </p>
+      </div>
+      <modal v-if='isShow' >
+
+          <div class="inline-block">
+            <button @click='close()'>✖︎</button>
+          <p>
+            分類
+          </p>
+          <p>
+            表題
+          </p>
+          <p>
+            詳細
+          </p>
+          <p>
+            担当
+          </p>
+          </div>
+          <div class="inline-block">
+          <p>
+            <input type='text' v-model='taskDetail.category'>
+          </p>
+          <p>
+            <input type='text' v-model='taskDetail.title'>
+          </p>
+          <p>
+            <input type='text' v-model='taskDetail.detail'>
+          </p>
+          <p>
+            <input type='text' v-model='taskDetail.person'>
+          </p>
+        </div>
+        <p>
+        <button @click='doUpdate(taskDetail)'>更新</button>
+
+        <button type='button' @click='doDelete(taskDetail)'>削除</button>
+        </p>
+      </modal>
+    </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.inline-block {
+  display: inline-block;
+}
+</style>
