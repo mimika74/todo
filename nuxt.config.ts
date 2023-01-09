@@ -9,6 +9,15 @@ export default defineNuxtConfig({
         { 'http-equiv': 'x-ua-compatible', content: 'IE=edge' },
         { name: 'viewport', content: 'width-device-width, initial-scale=1.0' },
       ],
+      link: [
+        { rel: 'stylesheet',
+          href: "https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@100&display=swap",
+        },
+        { rel: 'icon',
+          type: 'image/png',
+          href: '/favicon.png'
+        },
+      ]
     },
   },
   typescript: {

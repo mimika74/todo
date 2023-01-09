@@ -2,8 +2,6 @@ import { getFirestore, collection } from 'firebase/firestore'
 import { doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
 
-
-
 //firebaseと接続する
 const runtimeConfig = useRuntimeConfig()
 const firebaseConfig = {
@@ -18,71 +16,56 @@ const firebaseApp = initializeApp(firebaseConfig)
 const firestore = getFirestore(firebaseApp)
 
 export const useFirestore = () => {
-
-//⓪取得するデータの型を用意する
-type Task = {
+  //取得するデータの型を用意する
+  type Task = {
     category: string
     person: string
     title: string
     detail: string
     id: string
-}
+  }
+  const db = getFirestore()
+  const taskDoc = collection(firestore, 'tasks')
 
+  const getTask = async(taskDetail: Task) => {
+    const getDocId = await getDoc(doc(db, 'tasks'))
+      console.log(getDocId)
+  }
+  const getTasks = async() => {
+  const getData = await getDocs(collection(db, 'tasks'))
+  const allGetData = getData.docs.map((doc) => doc.data())
+    return allGetData
+  }
 
-    const db = getFirestore()
-
-    const taskDoc = collection(
-      firestore,
-      'tasks'
-    )
-
-    const getTask = async(taskArg: Task) => {
-      const getDocId = await getDoc(doc(db, 'tasks'))
-      return getDocId.id
-    }
-
-    const getTasks = async() => {
+  const addTask = async (task: Task) => {
+    await addDoc(taskDoc, {
+      category: task.category,
+      title: task.title,
+      detail: task.detail,
+      person: task.person,
+    })
+  }
+  const getDocIds = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
-    const allGetData = getData.docs.map((doc) => doc.data())
-      return allGetData
+      getData.forEach((doc) => { doc.id })
     }
 
-    const addTask = async (task: Task) => {
-         await addDoc(taskDoc, {
-            category: task.category,
-            title: task.title,
-            detail: task.detail,
-            person: task.person,
-        })
-    }
-
-    const getDocIds = async(taskArg: Task) => {
-        const getData = await getDocs(collection(db, 'tasks'))
-        getData.forEach((doc) => {
-                doc.id
-            })
-        }
-
-
-    const updateTask = async(taskArg: Task) => {
-      const id = getTask(taskArg)
-      const taskDataRef = doc(db, 'tasks')
-      await updateDoc(taskDataRef, {
-        category: taskArg.category,
-        title: taskArg.title,
-        detail: taskArg.detail,
-        person: taskArg.person,
-      })
-    }
-
-    const deleteTask = async (taskArg: Task) => {
-      await deleteDoc(doc(db, 'tasks', taskArg.id))
-    }
+  const updateTask = async(taskDetail: Task) => {
+    await updateDoc(doc(db, 'tasks'), {
+      category: taskDetail.category,
+      title: taskDetail.title,
+      detail: taskDetail.detail,
+      person: taskDetail.person,
+    })
+  }
+  const deleteTask = async () => {
+    await deleteDoc(doc(db, 'tasks', `DpNyPvFGGfZR76Lvuluo`))
+  }
 
 
   return {
-      getTask,
-      getDocIds,
+    getTask,
+    getDocIds,
     addTask,
     updateTask,
     deleteTask,

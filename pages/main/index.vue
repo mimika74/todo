@@ -1,6 +1,5 @@
 <script setup lang='ts'>
-const { getTask, getDocIds, getTasks, updateTask, deleteTask } = useFirestore()
-
+const { getTasks, updateTask, deleteTask } = useFirestore()
 
 type Task = {
   category: string
@@ -10,22 +9,21 @@ type Task = {
   id: string
 }
 
-
 const tasksAllData = await getTasks()
 const tasksAllDataRef = ref(tasksAllData)
 
-//本当はフィールドにドキュメントid入れるのよくないけど、updateとdeleteの時に第三引数が取り出しやすくなった
-const doUpdate = (taskArg: Task) => {
-  return updateTask(taskArg)
+const taskDetail = ref<Task>()
+
+const doUpdate = async(taskDetail: Task) => {
+
+  await updateTask(taskDetail)
 }
-const doDelete = async (taskArg: Task) => {
-  return deleteTask(taskArg)
+const doDelete = async (taskDetail: Task) => {
+  await deleteTask()
 }
 
 const isShow = ref(false)
 const isAddShow = ref(false)
-
-const taskDetail = ref<Task>()
 
 const open = (taskArg: Task) => {
   isShow.value = true
@@ -45,20 +43,13 @@ const closeAddModal = () => {
 </script>
 
 <template>
-  <div>
+  <div class='main'>
     <button @click='openAddModal()'>新規登録</button>
     <AddModal v-if='isAddShow'>
-      <div>
-        <AddTask />
-        <button @click='closeAddModal()'>close</button>
-      </div>
+      <button @click='closeAddModal()'>✖︎</button>
     </AddModal>
-
     <div>
       <div v-for='taskArg in tasksAllDataRef' class="inline-block" :key='taskArg.id'>
-        <p>
-
-        </p>
         <p>
           {{ taskArg.category }}
         </p>
@@ -76,23 +67,14 @@ const closeAddModal = () => {
         </p>
       </div>
       <modal v-if='isShow' >
-
-          <div class="inline-block">
-            <button @click='close()'>✖︎</button>
-          <p>
-            分類
-          </p>
-          <p>
-            表題
-          </p>
-          <p>
-            詳細
-          </p>
-          <p>
-            担当
-          </p>
-          </div>
-          <div class="inline-block">
+        <div class="inline-block">
+          <button @click='close()'>✖︎</button>
+          <p>分類</p>
+          <p>表題</p>
+          <p>詳細</p>
+          <p>担当</p>
+        </div>
+        <div class="inline-block">
           <p>
             <input type='text' v-model='taskDetail.category'>
           </p>
@@ -106,18 +88,33 @@ const closeAddModal = () => {
             <input type='text' v-model='taskDetail.person'>
           </p>
         </div>
-        <p>
-        <button @click='doUpdate(taskDetail)'>更新</button>
-
-        <button type='button' @click='doDelete(taskDetail)'>削除</button>
-        </p>
+        <div>
+          <button class='button-space' @click='doUpdate()'>更新</button>
+          <button class='button-space' type='button' @click='doDelete()'>削除</button>
+        </div>
       </modal>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.main {
+  font-family: 'M PLUS 1p', sans-serif;
+}
+
+.button-space {
+  margin:  5px;
+}
+
 .inline-block {
   display: inline-block;
+}
+
+button {
+  border: none;
+  outline: none;
+  background: #cfdc28;
+  color: white;
+  cursor: pointer;
 }
 </style>
