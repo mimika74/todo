@@ -2,6 +2,7 @@ import { getFirestore, collection } from 'firebase/firestore'
 import { doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
 
+
 //firebaseと接続する
 const runtimeConfig = useRuntimeConfig()
 const firebaseConfig = {
@@ -18,11 +19,11 @@ const firestore = getFirestore(firebaseApp)
 export const useFirestore = () => {
   //取得するデータの型を用意する
   type Task = {
-    category: string
-    person: string
-    title: string
-    detail: string
-    id: string
+    category?: string
+    person?: string
+    title?: string
+    detail?: string
+    id?: string
   }
   const db = getFirestore()
   const taskDoc = collection(firestore, 'tasks')
@@ -32,8 +33,13 @@ export const useFirestore = () => {
       console.log(getDocId)
   }
   const getTasks = async() => {
-  const getData = await getDocs(collection(db, 'tasks'))
-  const allGetData = getData.docs.map((doc) => doc.data())
+    const getData = await getDocs(collection(db, 'tasks'))
+    const allGetData = getData.docs.map((doc) => {
+      return {
+        ...doc.data(),
+        id: doc.id
+      }
+    })
     return allGetData
   }
 
@@ -48,18 +54,19 @@ export const useFirestore = () => {
   const getDocIds = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
       getData.forEach((doc) => { doc.id })
-    }
+  }
 
   const updateTask = async(taskDetail: Task) => {
-    await updateDoc(doc(db, 'tasks'), {
+    console.log(taskDetail.id);
+    await updateDoc(doc(db, 'tasks', taskDetail.id!), {
       category: taskDetail.category,
-      title: taskDetail.title,
       detail: taskDetail.detail,
       person: taskDetail.person,
+      title: taskDetail.title,
     })
   }
-  const deleteTask = async () => {
-    await deleteDoc(doc(db, 'tasks', `DpNyPvFGGfZR76Lvuluo`))
+  const deleteTask = async (taskDetail: Task) => {
+    await deleteDoc(doc(db, 'tasks', taskDetail.id!))
   }
 
 

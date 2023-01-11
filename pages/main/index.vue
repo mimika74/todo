@@ -1,4 +1,6 @@
 <script setup lang='ts'>
+import draggable from 'vuedraggable'
+import { useFirestore } from "~/composables/useFirestore";
 const { getTasks, updateTask, deleteTask } = useFirestore()
 
 type Task = {
@@ -19,7 +21,7 @@ const doUpdate = async(taskDetail: Task) => {
   await updateTask(taskDetail)
 }
 const doDelete = async (taskDetail: Task) => {
-  await deleteTask()
+  await deleteTask(taskDetail)
 }
 
 const isShow = ref(false)
@@ -40,6 +42,19 @@ const closeAddModal = () => {
   isAddShow.value = false
 
 }
+
+const keyword = ref('')
+const searchCondition = ref(tasksAllData)
+const search = () => {
+  if (keyword.value.length < 0) {
+    return tasksAllDataRef
+  }
+  if(keyword.value.length > 0) {
+     tasksAllDataRef.value = tasksAllData.filter(taskArg => {
+      return taskArg.value.includes(keyword.value)
+    })
+  }
+}
 </script>
 
 <template>
@@ -49,7 +64,8 @@ const closeAddModal = () => {
       <button @click='closeAddModal()'>✖︎</button>
     </AddModal>
     <div>
-      <div v-for='taskArg in tasksAllDataRef' class="inline-block" :key='taskArg.id'>
+      <div><input type='text' v-model='keyword' ><button @click='search'>検索</button></div>
+      <div v-for='taskArg in tasksAllDataRef' class='inline-block' @start="true" @end="false" :key='taskArg'>
         <p>
           {{ taskArg.category }}
         </p>
@@ -66,7 +82,7 @@ const closeAddModal = () => {
           <button @click='open(taskArg)'>編集</button>
         </p>
       </div>
-      <modal v-if='isShow' >
+      <modal v-if='isShow'>
         <div class="inline-block">
           <button @click='close()'>✖︎</button>
           <p>分類</p>
@@ -89,8 +105,8 @@ const closeAddModal = () => {
           </p>
         </div>
         <div>
-          <button class='button-space' @click='doUpdate()'>更新</button>
-          <button class='button-space' type='button' @click='doDelete()'>削除</button>
+          <button class='button-space' @click='doUpdate(taskDetail)'>更新</button>
+          <button class='button-space' type='button' @click='doDelete(taskDetail)'>削除</button>
         </div>
       </modal>
     </div>

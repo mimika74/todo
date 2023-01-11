@@ -1,7 +1,4 @@
 <script setup lang='ts'>
-
-
-
 // interface Props {　
 //
 // }
@@ -13,7 +10,6 @@
 //const props = defineProps<Props>()
 // const emits = defineEmits<Emits>()
 const { addTask } = useFirestore()
-
 
 // interface Props {
 //
