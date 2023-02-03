@@ -1,25 +1,20 @@
 <script setup lang='ts'>
+import { useStorage } from "~/composables/useStorage";
 // interface Props {　
-//
 // }
 // interface Emits {
-//保存ボタンクリックのイベントを渡す記述が必要
 // }
-
-
 //const props = defineProps<Props>()
 // const emits = defineEmits<Emits>()
 const { addTask } = useFirestore()
 
-// interface Props {
-//
-// }
 type Task = {
   category: string
   person: string
   title: string
   detail: string
-  id: string
+  //id: string
+  //logo?: string
 }
 
 
@@ -29,12 +24,23 @@ const task = ref<Task>({
   title: '',
   detail: '',
   person: '',
-  id: '',
+  //id: '',
+  //logo: '',
 })
 const Create = () => {
   addTask(task.value)
 }
 
+//const nuxtApp = useNuxtApp()
+
+// const fileUpload = (props: any) => {
+//    const file = props.target.files[0]
+//    nuxtApp.task.logo = URL.createObjectURL(file)
+//    const storageRef = ref(file.name)
+//    uploadBytes(storageRef, file).then((snapshot) => {
+//      console.log('アップロード', snapshot);
+//    });
+// }
 </script>
 
 <template>
@@ -50,10 +56,11 @@ const Create = () => {
               <tr><th>タイトル</th><td><input type='text' v-model='task.title' /></td></tr>
               <tr><th>詳細</th><td><input type='text' v-model='task.detail' /></td></tr>
               <tr><th>担当者</th><td><input type='text' v-model='task.person' /></td></tr>
+
             </table>
+
             <button>保存する</button>
           </form>
-
         </div>
       </div>
     </div>
@@ -85,8 +92,8 @@ const Create = () => {
 button {
   border: none;
   outline: none;
-  background: #cfdc28;
-  color: white;
+  background: #F2F2F2;
+  color: black;
   cursor: pointer;
 }
 </style>

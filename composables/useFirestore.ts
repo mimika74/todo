@@ -1,7 +1,7 @@
 import { getFirestore, collection } from 'firebase/firestore'
 import { doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
-
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 
 //firebaseと接続する
 const runtimeConfig = useRuntimeConfig()
@@ -24,14 +24,15 @@ export const useFirestore = () => {
     title?: string
     detail?: string
     id?: string
+    logo?: string
   }
   const db = getFirestore()
   const taskDoc = collection(firestore, 'tasks')
 
-  const getTask = async(taskDetail: Task) => {
-    const getDocId = await getDoc(doc(db, 'tasks'))
-      console.log(getDocId)
-  }
+  // const getTask = async(taskDetail: Task) => {
+  //   const getDocId = await getDoc(doc(db, 'tasks'))
+  //     console.log(getDocId)
+  // }
   const getTasks = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
     const allGetData = getData.docs.map((doc) => {
@@ -49,6 +50,7 @@ export const useFirestore = () => {
       title: task.title,
       detail: task.detail,
       person: task.person,
+      //logo: task.logo,
     })
   }
   const getDocIds = async() => {
@@ -69,13 +71,15 @@ export const useFirestore = () => {
     await deleteDoc(doc(db, 'tasks', taskDetail.id!))
   }
 
+  const storage = getStorage()
 
   return {
-    getTask,
+    //getTask,
     getDocIds,
     addTask,
     updateTask,
     deleteTask,
     getTasks,
+    storage,
   }
 }
