@@ -77,19 +77,26 @@ const search = () => {
       <button @click='closeAddModal()'>✖︎</button>
     </AddModal>
     <div>
-      <div><input type='text' v-model='searchCondition.search_keyword' ><button @click='search'>検索</button></div>
-      <div v-for='taskArg in tasksAllDataRef' class='card' :key='taskArg' @click='open(taskArg)'>
-        <div class='category'>
-          {{ taskArg.category }}
-        </div>
-        <div class='box'>
-          {{ taskArg.title }}
-        </div>
-        <div class='box'>
-          {{ taskArg.person }}
-        </div>
-        <div class=''>
-          <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
+      <div>
+        <input type='text' v-model='searchCondition.search_keyword'>
+        <button @click='search'>検索</button>
+      </div>
+      <div v-for='taskArg in tasksAllDataRef' :key='taskArg.id' @click='open(taskArg)' :draggable="true">
+        <div class="handle">
+          <div class='card'>
+            <div class='category'>
+              {{ taskArg.category }}
+            </div>
+            <div class='box'>
+              {{ taskArg.title }}
+            </div>
+            <div class='box'>
+              {{ taskArg.person }}
+            </div>
+            <div class=''>
+              <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
+            </div>
+          </div>
         </div>
       </div>
       <modal v-if='isShow'>
@@ -128,9 +135,9 @@ const search = () => {
 }
 
 .category {
-  margin-top: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
   background-color: #303030;
   color: lightgray;
   max-height: 30px;
@@ -142,8 +149,8 @@ const search = () => {
 }
 
 .box {
-  margin-top: 50px;
-  margin-right: 20px;
+  margin-top: 5px;
+  margin-right: 2px;
 }
 
 .edit-box-input {
@@ -160,9 +167,10 @@ const search = () => {
   background-color: #F2F2F2;
   border-radius: 15px;
   margin: 10px 10px;
-  min-width: 200px;
-  max-width: 300px;
-  min-height: 200px;
+  min-width: 100px;
+  max-width: 200px;
+  min-height: 100px;
+  max-height: 150px;
 }
 
 .edit-card {
