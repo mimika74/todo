@@ -1,6 +1,6 @@
 <script setup lang='ts'>
-import draggable from 'vuedraggable'
 import { useFirestore } from "~/composables/useFirestore";
+import {integer} from "vscode-languageserver-types";
 const { getTasks, updateTask, deleteTask } = useFirestore()
 
 
@@ -11,6 +11,11 @@ type Task = {
   detail: string
   id: string
   logo: string
+}
+
+type Category = {
+  id: string
+  name: string
 }
 
 const tasksAllData = <any>(await getTasks())
@@ -68,6 +73,27 @@ const search = () => {
   }
 }
 
+const dragIndex = ref<any | null>(null)
+const dragStart = (index: number) => {
+  dragIndex.value = index
+}
+
+const dragEnter = (index: number) => {
+  //console.log('index', index)
+  //console.log('dragIndex', dragIndex)
+  if (index === dragIndex) {
+    return
+  }
+  const deleteElement = tasksAllDataRef.value.splice(dragIndex.value, 1)[0]
+  tasksAllDataRef.value.splice(index, 0, deleteElement)
+  dragIndex.value = index
+}
+
+const dragEnd = () => {
+  dragIndex.value = null
+}
+
+
 </script>
 
 <template>
@@ -81,24 +107,34 @@ const search = () => {
         <input type='text' v-model='searchCondition.search_keyword'>
         <button @click='search'>検索</button>
       </div>
-      <div v-for='taskArg in tasksAllDataRef' :key='taskArg.id' @click='open(taskArg)' :draggable="true">
-        <div class="handle">
-          <div class='card'>
-            <div class='category'>
-              {{ taskArg.category }}
-            </div>
-            <div class='box'>
-              {{ taskArg.title }}
-            </div>
-            <div class='box'>
-              {{ taskArg.person }}
-            </div>
-            <div class=''>
-              <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
-            </div>
+      <div class="board" >
+        <div class="board-block" id="todo">a</div>
+        <div class="board-block" id="todo">b</div>
+      </div>
+      <div class='board'>
+        <div v-for='(taskArg, index) in tasksAllDataRef' :key='taskArg.id' @click='open(taskArg)' class ='card'
+             :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd">
+          <div class="category">
+            {{ taskArg.category }}
           </div>
+          <div class="box">
+            {{ taskArg.title }}
+          </div>
+          <div class="box">
+            {{ taskArg.person }}
+          </div>
+          <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
         </div>
       </div>
+
+<!--        <div class='board-block' id='todo'>-->
+<!--          <draggable v-model="tasksAllDataRef" item-key='id' group='item' @start='draggableStart' @end='dragging=false' handle='.handle'>-->
+<!--            <template #item="{ category }">-->
+<!--                {{ category }}-->
+<!--            </template>-->
+<!--          </draggable>-->
+<!--        </div>-->
+
       <modal v-if='isShow'>
         <button @click='close()'>✖︎</button>
         <div class="edit-card">
@@ -127,6 +163,25 @@ const search = () => {
 <style lang="scss" scoped>
 .main {
   font-family: 'M PLUS 1p', sans-serif;
+}
+
+.board {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.board-block {
+  padding: 0.6rem;
+  min-width: 200px;
+  min-height: 500px;
+  border-radius: 0.3rem;
+  margin-right: 20px;
+  margin-top: 20px;
+}
+
+#todo {
+  background-color: blanchedalmond;
 }
 
 .edit-box {
@@ -195,5 +250,9 @@ button {
   color: black;
   cursor: pointer;
   border-radius: 50px;
+}
+
+.trelloboard {
+  display: flex;
 }
 </style>

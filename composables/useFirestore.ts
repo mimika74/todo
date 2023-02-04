@@ -26,6 +26,12 @@ export const useFirestore = () => {
     id?: string
     logo?: string
   }
+
+  type Category = {
+    id: string
+    name: string
+  }
+
   const db = getFirestore()
   const taskDoc = collection(firestore, 'tasks')
 
