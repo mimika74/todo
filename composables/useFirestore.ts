@@ -1,5 +1,5 @@
 import { getFirestore, collection } from 'firebase/firestore'
-import { doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
+import { doc, setDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
 
@@ -25,12 +25,14 @@ export const useFirestore = () => {
     detail?: string
     id?: string
     logo?: string
+    index_id?: number | null
   }
 
-  type Category = {
-    id: string
-    name: string
-  }
+  //追加予定
+  // type Category = {
+  //   id: string
+  //   name: string
+  // }
 
   const db = getFirestore()
   const taskDoc = collection(firestore, 'tasks')
@@ -79,6 +81,22 @@ export const useFirestore = () => {
 
   const storage = getStorage()
 
+  // ユーザー作成
+  type User = {
+    id: string;
+    name: string;
+    email: string;
+    uid: string;
+  }
+  const createUser = async (user: User) => {
+    await setDoc(doc(db, 'users', user.uid!), {
+      //id: user.uid,
+      //email: user.email,
+      name: user.name,
+    })
+  };
+
+
   return {
     //getTask,
     getDocIds,
@@ -87,5 +105,6 @@ export const useFirestore = () => {
     deleteTask,
     getTasks,
     storage,
+    createUser,
   }
 }

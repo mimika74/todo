@@ -1,32 +1,36 @@
 <script setup lang='ts'>
 import { useFirestore } from "~/composables/useFirestore";
-import {integer} from "vscode-languageserver-types";
+import {useAuth} from "~/composables/useAuth";
+
+const { signOut } = useAuth()
 const { getTasks, updateTask, deleteTask } = useFirestore()
 
-
+definePageMeta({
+  middleware: ['auth']
+})
 type Task = {
   category: string
   person: string
   title: string
   detail: string
   id: string
-  logo: string
+  logo?: string
+  index_id?: number | null
 }
 
-type Category = {
-  id: string
-  name: string
-}
+//カテゴリーはゆくゆく別にわけたい
+//
+// type Category = {
+//   id: string
+//   name: string
+// }
 
 const tasksAllData = <any>(await getTasks())
 const tasksAllDataRef = ref<Task[]>(tasksAllData)
-
-
-
+//const taskArg = ref<Task>()
 const taskDetail = ref<Task>()
 
 const doUpdate = async(taskDetail: Task) => {
-
   await updateTask(taskDetail)
 }
 const doDelete = async (taskDetail: Task) => {
@@ -45,11 +49,9 @@ const close = () => isShow.value = false
 
 const openAddModal = () => {
   isAddShow.value = true
-
 }
 const closeAddModal = () => {
   isAddShow.value = false
-
 }
 
 interface searchCondition {
@@ -73,7 +75,7 @@ const search = () => {
   }
 }
 
-const dragIndex = ref<any | null>(null)
+
 const dragStart = (index: number) => {
   dragIndex.value = index
 }
@@ -81,23 +83,35 @@ const dragStart = (index: number) => {
 const dragEnter = (index: number) => {
   //console.log('index', index)
   //console.log('dragIndex', dragIndex)
-  if (index === dragIndex) {
+  if (index === dragIndex.value) {
     return
   }
   const deleteElement = tasksAllDataRef.value.splice(dragIndex.value, 1)[0]
   tasksAllDataRef.value.splice(index, 0, deleteElement)
   dragIndex.value = index
 }
+const dragIndex = ref<number | null>(null)
+const dragEnd = (index: number, taskArg: Task) => {
 
-const dragEnd = () => {
-  dragIndex.value = null
+  taskArg.index_id = dragIndex.value
+  console.log(taskArg)
 }
+//dragIndex.value = null
+watch(dragIndex, (newValue, oldValue) => {
 
+})
 
+const logout = async() => {
+  await signOut()
+    .then(() => {
+      navigateTo('/login', { replace: true })
+    })
+}
 </script>
 
 <template>
   <div class='main'>
+    <button @click="logout">ログアウト</button>
     <button @click='openAddModal()' class='add'>＋</button>
     <AddModal v-if='isAddShow'>
       <button @click='closeAddModal()'>✖︎</button>
@@ -107,13 +121,17 @@ const dragEnd = () => {
         <input type='text' v-model='searchCondition.search_keyword'>
         <button @click='search'>検索</button>
       </div>
-      <div class="board" >
-        <div class="board-block" id="todo">a</div>
-        <div class="board-block" id="todo">b</div>
-      </div>
+<!--        <draggable class='board'>-->
+<!--          <div v-for='(taskArg, index) in tasksAllDataRef' :key='index' @click='open(taskArg)' class='card'-->
+<!--               :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd">-->
+<!--            <div class='board'>-->
+<!--              {{ taskArg.person }}-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </draggable>-->
       <div class='board'>
-        <div v-for='(taskArg, index) in tasksAllDataRef' :key='taskArg.id' @click='open(taskArg)' class ='card'
-             :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd">
+        <div v-for='(taskArg, index) in tasksAllDataRef' :key='index' @click='open(taskArg)' class ='card'
+             :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd(index, taskArg)">
           <div class="category">
             {{ taskArg.category }}
           </div>
@@ -126,15 +144,6 @@ const dragEnd = () => {
           <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
         </div>
       </div>
-
-<!--        <div class='board-block' id='todo'>-->
-<!--          <draggable v-model="tasksAllDataRef" item-key='id' group='item' @start='draggableStart' @end='dragging=false' handle='.handle'>-->
-<!--            <template #item="{ category }">-->
-<!--                {{ category }}-->
-<!--            </template>-->
-<!--          </draggable>-->
-<!--        </div>-->
-
       <modal v-if='isShow'>
         <button @click='close()'>✖︎</button>
         <div class="edit-card">
