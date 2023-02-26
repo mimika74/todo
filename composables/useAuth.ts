@@ -6,16 +6,19 @@ export const useAuth = () => {
   const token = useState<string | null>('token', () => null)
   const db = getFirestore()
     //サインアップ
-  const signUp = async(email: string, password: string) => {
+  const signUp = async(email: string, password: string, name: string) => {
     return await new Promise<void>(() => {
       const auth = getAuth()
+        const userInfo = {
+            name: name,
+        }
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           userCredential.user
           alert('登録完了！')
              setDoc(doc(db, 'users', userCredential.user.uid!), {
               email: userCredential.user.email,
-              name: userCredential.user.user.name,
+              name: userInfo.name,
             })
         })
         .catch(() => {

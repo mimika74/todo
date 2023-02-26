@@ -23,7 +23,7 @@ const userInput = ref<UserInput>({ name: '', email: '', password: ''})
 
 
 const signUpUser = async () => {
-  await signUp(userInput.value.email, userInput.value.password)
+  await signUp(userInput.value.email, userInput.value.password, userInput.value.name)
     .then((userInput) => {
       //await createUser({ name: userInput.name})
       navigateTo('/thanks')
