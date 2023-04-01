@@ -1,11 +1,4 @@
 <script setup lang='ts'>
-import { useStorage } from "~/composables/useStorage";
-// interface Props {　
-// }
-// interface Emits {
-// }
-//const props = defineProps<Props>()
-// const emits = defineEmits<Emits>()
 const { addTask } = useFirestore()
 
 type Task = {
@@ -13,10 +6,8 @@ type Task = {
   person: string
   title: string
   detail: string
-  //id: string
-  //logo?: string
+  photo: string
 }
-
 
 //データを追加する時に使う
 const task = ref<Task>({
@@ -24,23 +15,30 @@ const task = ref<Task>({
   title: '',
   detail: '',
   person: '',
-  //id: '',
-  //logo: '',
+  photo: '',
 })
-const Create = () => {
-  addTask(task.value)
+
+// interface Props {
+//   closeAddModal: any
+//   }
+// interface Emits {
+//   closeAddModal: any
+//   }
+// const props = defineProps<Props>()
+// const emits = defineEmits<Emits>()
+
+const photo = ref<string>()
+const url = ref<string>()
+const changeImage = (props: any) => {
+  photo.value = props.target.files[0] || null
+  const img = props.target.files[0]
+  url.value = URL.createObjectURL(img)
 }
 
-//const nuxtApp = useNuxtApp()
+const Create = async() => {
+  await addTask(task.value, photo.value)
+}
 
-// const fileUpload = (props: any) => {
-//    const file = props.target.files[0]
-//    nuxtApp.task.logo = URL.createObjectURL(file)
-//    const storageRef = ref(file.name)
-//    uploadBytes(storageRef, file).then((snapshot) => {
-//      console.log('アップロード', snapshot);
-//    });
-// }
 </script>
 
 <template>
@@ -56,9 +54,9 @@ const Create = () => {
               <tr><th>タイトル</th><td><input type='text' v-model='task.title' /></td></tr>
               <tr><th>詳細</th><td><input type='text' v-model='task.detail' /></td></tr>
               <tr><th>担当者</th><td><input type='text' v-model='task.person' /></td></tr>
-
+              <tr><th>添付ファイル</th><td><input type="file" accept="image/jpeg,image/png"  @change="changeImage"></td></tr>
+              <img v-if='photo' :src="url"  alt='' width='100' height='100' />
             </table>
-
             <button>保存する</button>
           </form>
         </div>

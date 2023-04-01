@@ -1,7 +1,8 @@
 import { getFirestore, collection } from 'firebase/firestore'
 import { doc, setDoc, getDocs, addDoc, updateDoc, deleteDoc } from '@firebase/firestore'
 import { initializeApp } from "firebase/app";
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
+
 
 //firebaseと接続する
 const runtimeConfig = useRuntimeConfig()
@@ -24,7 +25,7 @@ export const useFirestore = () => {
     title?: string
     detail?: string
     id?: string
-    logo?: string
+    photo?: string
     index_id?: number | null
   }
 
@@ -37,10 +38,6 @@ export const useFirestore = () => {
   const db = getFirestore()
   const taskDoc = collection(firestore, 'tasks')
 
-  // const getTask = async(taskDetail: Task) => {
-  //   const getDocId = await getDoc(doc(db, 'tasks'))
-  //     console.log(getDocId)
-  // }
   const getTasks = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
     const allGetData = getData.docs.map((doc) => {
@@ -52,15 +49,55 @@ export const useFirestore = () => {
     return allGetData
   }
 
-  const addTask = async (task: Task) => {
-    await addDoc(taskDoc, {
-      category: task.category,
-      title: task.title,
-      detail: task.detail,
-      person: task.person,
-      //logo: task.logo,
-    })
-  }
+  const addTask = async(task: Task, file?: any) => {
+     file ??= ''
+    const metadata = {
+      cacheControl: 'public,max-age=300',
+      contentType: 'image/jpeg'
+    };
+      const storage = getStorage();
+      const storageRef = ref(storage, 'images/' + file.name);
+
+        uploadBytesResumable(storageRef, file, metadata)
+            .then((snapshot) => {
+              getDownloadURL(snapshot.ref)
+                  .then((url) => {
+                    addDoc(taskDoc, {
+                      category: task.category,
+                      title: task.title,
+                      detail: task.detail,
+                      person: task.person,
+                      photo: url,
+                    })
+                        .then(() => {
+                          console.log('success')
+                        })
+                        .catch((e) => {
+                          console.log('fail', e)
+                        })
+                  });
+            })
+            .catch((error) => {
+              console.error('Upload failed', error);
+            });
+    //   addDoc(taskDoc, {
+    //     category: task.category,
+    //     title: task.title,
+    //     detail: task.detail,
+    //     person: task.person,
+    //   })
+     }
+
+
+  // const addTask = async (task: Task) => {
+  //   await addDoc(taskDoc, {
+  //     category: task.category,
+  //     title: task.title,
+  //     detail: task.detail,
+  //     person: task.person,
+  //     //logo: task.logo,
+  //   })
+  // }
   const getDocIds = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
       getData.forEach((doc) => { doc.id })
@@ -79,8 +116,6 @@ export const useFirestore = () => {
     await deleteDoc(doc(db, 'tasks', taskDetail.id!))
   }
 
-  const storage = getStorage()
-
   // ユーザー作成
   type User = {
     id: string;
@@ -90,21 +125,16 @@ export const useFirestore = () => {
   }
   const createUser = async (user: User) => {
     await setDoc(doc(db, 'users', user.uid!), {
-      //id: user.uid,
-      //email: user.email,
       name: user.name,
     })
   };
 
-
   return {
-    //getTask,
     getDocIds,
     addTask,
     updateTask,
     deleteTask,
     getTasks,
-    storage,
     createUser,
   }
 }

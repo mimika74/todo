@@ -1,9 +1,9 @@
 <script setup lang='ts'>
-import { useFirestore } from "~/composables/useFirestore";
-import {useAuth} from "~/composables/useAuth";
+import { useAuth } from "~/composables/useAuth";
+
 
 const { signOut } = useAuth()
-const { getTasks, updateTask, deleteTask } = useFirestore()
+const { getTasks, updateTask, deleteTask, uploadImage } = useFirestore()
 
 definePageMeta({
   middleware: ['auth']
@@ -14,16 +14,9 @@ type Task = {
   title: string
   detail: string
   id: string
-  logo?: string
+  photo?: string
   index_id?: number | null
 }
-
-//カテゴリーはゆくゆく別にわけたい
-//
-// type Category = {
-//   id: string
-//   name: string
-// }
 
 const tasksAllData = <any>(await getTasks())
 const tasksAllDataRef = ref<Task[]>(tasksAllData)
@@ -97,9 +90,9 @@ const dragEnd = (index: number, taskArg: Task) => {
   console.log(taskArg)
 }
 //dragIndex.value = null
-watch(dragIndex, (newValue, oldValue) => {
-
-})
+// watch(dragIndex, (newValue, oldValue) => {
+//
+// })
 
 const logout = async() => {
   await signOut()
@@ -107,13 +100,19 @@ const logout = async() => {
       navigateTo('/login', { replace: true })
     })
 }
+
+const photo = ref<string>()
+const changeImage = (props: any) => {
+  photo.value = props.target.files[0]
+}
+
 </script>
 
 <template>
   <div class='main'>
     <button @click="logout">ログアウト</button>
     <button @click='openAddModal()' class='add'>＋</button>
-    <AddModal v-if='isAddShow'>
+    <AddModal v-if='isAddShow' @closeAddModal="closeAddModal">
       <button @click='closeAddModal()'>✖︎</button>
     </AddModal>
     <div>
@@ -121,14 +120,6 @@ const logout = async() => {
         <input type='text' v-model='searchCondition.search_keyword'>
         <button @click='search'>検索</button>
       </div>
-<!--        <draggable class='board'>-->
-<!--          <div v-for='(taskArg, index) in tasksAllDataRef' :key='index' @click='open(taskArg)' class='card'-->
-<!--               :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd">-->
-<!--            <div class='board'>-->
-<!--              {{ taskArg.person }}-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </draggable>-->
       <div class='board'>
         <div v-for='(taskArg, index) in tasksAllDataRef' :key='index' @click='open(taskArg)' class ='card'
              :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd(index, taskArg)">
@@ -141,7 +132,7 @@ const logout = async() => {
           <div class="box">
             {{ taskArg.person }}
           </div>
-          <img v-if='taskArg.logo' :src='taskArg.logo' alt='' width='100' height='100' />
+          <img v-if='taskArg.photo' :src='taskArg.photo' alt='' width='100' height='100' />
         </div>
       </div>
       <modal v-if='isShow'>
@@ -158,6 +149,9 @@ const logout = async() => {
           </div>
           <div class='edit-box'>
             <input type='text' v-model='taskDetail.detail' placeholder='説明' class='edit-box-input'>
+          </div>
+          <div class='edit-box'>
+            <input type="file" accept="image/jpeg,image/png" ref="preview"  @change="changeImage">
           </div>
         </div>
         <div>
