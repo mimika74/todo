@@ -3,7 +3,7 @@ import { useAuth } from "~/composables/useAuth";
 
 
 const { signOut } = useAuth()
-const { getTasks, updateTask, deleteTask, uploadImage } = useFirestore()
+const { getTasks, updateTask, deleteTask } = useFirestore()
 
 definePageMeta({
   middleware: ['auth']
@@ -23,8 +23,22 @@ const tasksAllDataRef = ref<Task[]>(tasksAllData)
 //const taskArg = ref<Task>()
 const taskDetail = ref<Task>()
 
+const photo = ref<string>()
+
+const url = ref<string>()
+const reset = (taskDetail: Task) => {
+  taskDetail.photo = ''
+}
+
+const editImage = (props: any) => {
+  photo.value = props.target.files[0] || null
+  const img = props.target.files[0]
+  url.value = URL.createObjectURL(img)
+}
+
+
 const doUpdate = async(taskDetail: Task) => {
-  await updateTask(taskDetail)
+  await updateTask(taskDetail, photo.value)
 }
 const doDelete = async (taskDetail: Task) => {
   await deleteTask(taskDetail)
@@ -63,9 +77,10 @@ const search = () => {
   }
   if(searchCondition.value.search_keyword.length > 0) {
      tasksAllDataRef.value = tasksAllDataRef.value.filter((taskArg) => {
-      return taskArg.title.includes(searchCondition.value.search_keyword)
+      return taskArg.person.includes(searchCondition.value.search_keyword)
     })
   }
+
 }
 
 
@@ -79,8 +94,8 @@ const dragEnter = (index: number) => {
   if (index === dragIndex.value) {
     return
   }
-  const deleteElement = tasksAllDataRef.value.splice(dragIndex.value, 1)[0]
-  tasksAllDataRef.value.splice(index, 0, deleteElement)
+  //const deleteElement = tasksAllDataRef.value.splice(dragIndex.value, 1)[0]
+  //tasksAllDataRef.value.splice(index, 0, deleteElement)
   dragIndex.value = index
 }
 const dragIndex = ref<number | null>(null)
@@ -89,7 +104,7 @@ const dragEnd = (index: number, taskArg: Task) => {
   taskArg.index_id = dragIndex.value
   console.log(taskArg)
 }
-//dragIndex.value = null
+// dragIndex.value = null
 // watch(dragIndex, (newValue, oldValue) => {
 //
 // })
@@ -101,28 +116,33 @@ const logout = async() => {
     })
 }
 
-const photo = ref<string>()
-const changeImage = (props: any) => {
-  photo.value = props.target.files[0]
-}
-
 </script>
 
 <template>
   <div class='main'>
-    <button @click="logout">ログアウト</button>
-    <button @click='openAddModal()' class='add'>＋</button>
+    <v-btn @click="logout">ログアウト</v-btn>
+    <v-container>
+    <v-btn @click='openAddModal()' class='add'>＋</v-btn>
     <AddModal v-if='isAddShow' @closeAddModal="closeAddModal">
-      <button @click='closeAddModal()'>✖︎</button>
+      <v-btn @click='closeAddModal()'>✖︎</v-btn>
     </AddModal>
+    <v-spacer></v-spacer>
     <div>
       <div>
-        <input type='text' v-model='searchCondition.search_keyword'>
-        <button @click='search'>検索</button>
+        <v-row>
+          <v-col cols="12" sm="4">
+            <v-text-field
+                v-model="searchCondition.search_keyword"
+                label="キーワード"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-btn @click='search'>検索</v-btn>
       </div>
       <div class='board'>
-        <div v-for='(taskArg, index) in tasksAllDataRef' :key='index' @click='open(taskArg)' class ='card'
-             :draggable="true" @dragstart="dragStart(index)" @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd(index, taskArg)">
+        <div v-for='(taskArg, index) in tasksAllDataRef' @click='open(taskArg)'
+             :key='index' class ='card' :draggable="true" @dragstart="dragStart(index)"
+             @dragenter="dragEnter(index)" @dragover.prevent @dragend="dragEnd(index, taskArg)">
           <div class="category">
             {{ taskArg.category }}
           </div>
@@ -136,31 +156,26 @@ const changeImage = (props: any) => {
         </div>
       </div>
       <modal v-if='isShow'>
-        <button @click='close()'>✖︎</button>
-        <div class="edit-card">
-          <div class='edit-box'>
-            <input type='text' v-model='taskDetail.category' placeholder='カテゴリー' class='edit-box-input'>
-          </div>
-          <div class='edit-box'>
-            <input type='text' v-model='taskDetail.title' placeholder='タイトル' class='edit-box-input'>
-          </div>
-          <div class='edit-box'>
-            <input type='text' v-model='taskDetail.person' placeholder='担当者' class='edit-box-input'>
-          </div>
-          <div class='edit-box'>
-            <input type='text' v-model='taskDetail.detail' placeholder='説明' class='edit-box-input'>
-          </div>
-          <div class='edit-box'>
-            <input type="file" accept="image/jpeg,image/png" ref="preview"  @change="changeImage">
-          </div>
-        </div>
+        <v-btn @click='close()'>✖︎</v-btn>
+        <v-text-field v-model='taskDetail.category' placeholder='カテゴリー' />
+        <v-text-field type='text' v-model='taskDetail.title' placeholder='タイトル' class='edit-box-input' />
+        <v-text-field type='text' v-model='taskDetail.person' placeholder='担当者' class='edit-box-input' />
+        <v-text-field type='text' v-model='taskDetail.detail' placeholder='説明' class='edit-box-input' />
         <div>
-          <button @click='doUpdate(taskDetail)'>保存</button>
-          <button type='button' @click='doDelete(taskDetail)'>削除</button>
+          <input type="file" accept="image/jpeg,image/png"  @change="editImage">
+          <img v-if='taskDetail.photo' :src='taskDetail.photo' alt='' width='100' height='100' />
+          <img v-if='photo' :src='url' alt='' width='100' height='100' />
+        </div>
+          <div @click="reset">✖</div>
+        <div>
+          <v-btn @click='doUpdate(taskDetail)'>保存</v-btn>
+          <v-btn type='button' @click='doDelete(taskDetail)'>削除</v-btn>
         </div>
       </modal>
     </div>
+    </v-container>
   </div>
+
 </template>
 
 <style lang="scss" scoped>
@@ -176,7 +191,7 @@ const changeImage = (props: any) => {
 
 .board-block {
   padding: 0.6rem;
-  min-width: 200px;
+  min-width: 500px;
   min-height: 500px;
   border-radius: 0.3rem;
   margin-right: 20px;
@@ -213,9 +228,9 @@ const changeImage = (props: any) => {
 
 .edit-box-input {
   margin-right: 5px;
-  border: none;
-  outline: none;
-  border-bottom: 1px solid #999;
+  //border: none;
+  //outline: none;
+  //border-bottom: 1px solid #999;
 }
 
 .card {
@@ -237,8 +252,8 @@ const changeImage = (props: any) => {
 }
 
 button {
-  border: none;
-  outline: none;
+  //border: none;
+  //outline: none;
   background: #F2F2F2;
   color: black;
   cursor: pointer;
@@ -247,8 +262,8 @@ button {
 }
 
 .add {
-  border: none;
-  outline: none;
+  //border: none;
+  //outline: none;
   background: #F2F2F2;
   color: black;
   cursor: pointer;

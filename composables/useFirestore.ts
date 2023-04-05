@@ -49,68 +49,120 @@ export const useFirestore = () => {
     return allGetData
   }
 
-  const addTask = async(task: Task, file?: any) => {
-     file ??= ''
-    const metadata = {
-      cacheControl: 'public,max-age=300',
-      contentType: 'image/jpeg'
-    };
+  const addTask = (task: Task, file?: any) => {
+      file ??= ''
+      //
+      // await addDoc(taskDoc, {
+      //   category: task.category,
+      //   title: task.title,
+      //   detail: task.detail,
+      //   person: task.person,
+      // })
+      //
+      const metadata = {
+          cacheControl: 'public,max-age=300',
+          contentType: 'image/jpeg'
+      };
+
       const storage = getStorage();
       const storageRef = ref(storage, 'images/' + file.name);
-
-        uploadBytesResumable(storageRef, file, metadata)
-            .then((snapshot) => {
+      uploadBytesResumable(storageRef, file, metadata)
+          .then((snapshot) => {
               getDownloadURL(snapshot.ref)
                   .then((url) => {
-                    addDoc(taskDoc, {
-                      category: task.category,
-                      title: task.title,
-                      detail: task.detail,
-                      person: task.person,
-                      photo: url,
-                    })
-                        .then(() => {
-                          console.log('success')
-                        })
-                        .catch((e) => {
-                          console.log('fail', e)
-                        })
+                      addDoc(taskDoc, {
+                          category: task.category,
+                          title: task.title,
+                          detail: task.detail,
+                          person: task.person,
+                          photo: url,
+                      })
+                          .then(() => {
+                              console.log('success')
+                          })
+                          .catch((e) => {
+                              console.log('fail', e)
+                          })
                   });
-            })
-            .catch((error) => {
+          })
+          .catch((error) => {
               console.error('Upload failed', error);
-            });
-    //   addDoc(taskDoc, {
-    //     category: task.category,
-    //     title: task.title,
-    //     detail: task.detail,
-    //     person: task.person,
-    //   })
-     }
+          });
+
+          //
+          // await addDoc(taskDoc, {
+          //     category: task.category,
+          //     title: task.title,
+          //     detail: task.detail,
+          //     person: task.person,
+          // })
 
 
-  // const addTask = async (task: Task) => {
-  //   await addDoc(taskDoc, {
-  //     category: task.category,
-  //     title: task.title,
-  //     detail: task.detail,
-  //     person: task.person,
-  //     //logo: task.logo,
-  //   })
-  // }
+       // uploadBytesResumable(storageRef, file, metadata)
+       //    .then((snapshot) => {
+       //      getDownloadURL(snapshot.ref)
+       //          .then((url) => {
+       //            addDoc(taskDoc, {
+       //              category: task.category,
+       //              title: task.title,
+       //              detail: task.detail,
+       //              person: task.person,
+       //              photo: url,
+       //            })
+       //                .then(() => {
+       //                  console.log('success')
+       //                })
+       //                .catch((e) => {
+       //                  console.log('fail', e)
+       //                })
+       //          });
+       //    })
+       //    .catch((error) => {
+       //      console.error('Upload failed', error);
+       //    });
+
+      //   addDoc(taskDoc, {
+      //     category: task.category,
+      //     title: task.title,
+      //     detail: task.detail,
+      //     person: task.person,
+      //   })
+  }
   const getDocIds = async() => {
     const getData = await getDocs(collection(db, 'tasks'))
       getData.forEach((doc) => { doc.id })
   }
 
-  const updateTask = async(taskDetail: Task) => {
+  const updateTask = async(taskDetail: Task, file?: any) => {
+      file ??= ''
     console.log(taskDetail.id);
-    await updateDoc(doc(db, 'tasks', taskDetail.id!), {
-      category: taskDetail.category,
-      detail: taskDetail.detail,
-      person: taskDetail.person,
-      title: taskDetail.title,
-    })
+      const metadata = {
+          cacheControl: 'public,max-age=300',
+          contentType: 'image/jpeg'
+      };
+      const storage = getStorage();
+      const storageRef = ref(storage, 'images/' + file.name);
+      await uploadBytesResumable(storageRef, file, metadata)
+          .then((snapshot) => {
+              getDownloadURL(snapshot.ref)
+                  .then((url) => {
+                      updateDoc(doc(db, 'tasks', taskDetail.id!), {
+                          category: taskDetail.category,
+                          detail: taskDetail.detail,
+                          person: taskDetail.person,
+                          title: taskDetail.title,
+                          photo: url,
+                        })
+                      });
+                  })
+
+    //   await updateDoc(doc(db, 'tasks', taskDetail.id!), {
+    //   category: taskDetail.category,
+    //   detail: taskDetail.detail,
+    //   person: taskDetail.person,
+    //   title: taskDetail.title,
+    //   photo: taskDetail.photo,
+    // })
   }
   const deleteTask = async (taskDetail: Task) => {
     await deleteDoc(doc(db, 'tasks', taskDetail.id!))

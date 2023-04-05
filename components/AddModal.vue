@@ -30,15 +30,15 @@ const task = ref<Task>({
 const photo = ref<string>()
 const url = ref<string>()
 const changeImage = (props: any) => {
+  //let reader = new FileReader();
+  //reader.onload = (props: any) => {
   photo.value = props.target.files[0] || null
   const img = props.target.files[0]
   url.value = URL.createObjectURL(img)
 }
-
 const Create = async() => {
   await addTask(task.value, photo.value)
 }
-
 </script>
 
 <template>
@@ -47,18 +47,20 @@ const Create = async() => {
       <div class='contents'>
         <div>
           <slot />
-          <p>新規登録</p>
-          <form @submit.prevent='Create'>
-            <table>
-              <tr><th>カテゴリー</th><td><input type='text' v-model='task.category' /></td></tr>
-              <tr><th>タイトル</th><td><input type='text' v-model='task.title' /></td></tr>
-              <tr><th>詳細</th><td><input type='text' v-model='task.detail' /></td></tr>
-              <tr><th>担当者</th><td><input type='text' v-model='task.person' /></td></tr>
-              <tr><th>添付ファイル</th><td><input type="file" accept="image/jpeg,image/png"  @change="changeImage"></td></tr>
+          <v-form @submit.prevent='Create'>
+            <v-table>
+              <v-col sm="3">
+              <tr>新規登録</tr>
+              <tr><td><v-text-field label='カテゴリー' type='text' v-model='task.category' /></td></tr>
+              <tr><td><v-text-field label='タイトル' type='text' v-model='task.title' /></td></tr>
+              <tr><td><v-text-field label='詳細' type='text' v-model='task.detail' /></td></tr>
+              <tr><td><v-text-field label='担当者' type='text' v-model='task.person' /></td></tr>
+              <tr><td><input label='添付ファイル' type="file" accept="image/jpeg,image/png"  @change="changeImage" /></td></tr>
               <img v-if='photo' :src="url"  alt='' width='100' height='100' />
-            </table>
-            <button>保存する</button>
-          </form>
+              </v-col>
+            </v-table>
+            <v-btn>保存する</v-btn>
+          </v-form>
         </div>
       </div>
     </div>
@@ -82,14 +84,14 @@ const Create = async() => {
 .contents {
   z-index: 2;
   width: 50%;
-  height: 50%;
+  height: 70%;
   padding: 1em;
   background: #fff;
 }
 
 button {
-  border: none;
-  outline: none;
+  //border: none;
+  //outline: none;
   background: #F2F2F2;
   color: black;
   cursor: pointer;

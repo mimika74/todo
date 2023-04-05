@@ -1,24 +1,19 @@
 <script setup lang='ts'>
 //親から、タスク内容を渡してもらう
-
 // interface Props {　
 //
 // }
 // interface Emits {
 //保存ボタンクリックのイベントを渡す記述が必要
 // }
-
-
 //const props = defineProps<Props>()
 // const emits = defineEmits<Emits>()
-
 </script>
 
 <template>
   <div>
     <div class='overlay'>
       <div class='contents'>
-        <p></p>
         <slot />
       </div>
     </div>
@@ -42,9 +37,8 @@
 .contents {
   z-index: 2;
   width: 50%;
-  height: 50%;
+  height: 80%;
   padding: 1em;
   background: #fff;
 }
-
 </style>

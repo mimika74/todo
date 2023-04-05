@@ -22,20 +22,42 @@ const login = async () => {
 
 <template>
   <div>
-    <div>ログイン</div>
-    <form @submit.prevent="login">
-      <div>
-        <label>メールアドレス</label>
-        <input type="text" v-model="userInput.email">
-      </div>
-      <div>
-        <label>パスワード</label>
-        <input autocomplete="off" type="password" v-model="userInput.password">
-      </div>
-      <div>
+    <v-app>
+      <v-app-bar rounded>
+        <v-toolbar-title>TODO</v-toolbar-title>
+      </v-app-bar>
+      <v-main>
+        <v-container>
+    <v-label>ログイン</v-label>
+    <v-form @submit.prevent="login">
+      <v-row>
+      <v-col sm="3">
+        <v-label>メールアドレス</v-label>
+        <v-text-field type="text" v-model="userInput.email" />
+      </v-col>
+      <v-col sm="3">
+        <v-label>パスワード</v-label>
+        <v-text-field autocomplete="off" type="password" v-model="userInput.password" />
+      </v-col>
+      </v-row>
+      <v-btn>
         <button>ログイン</button>
-      </div>
-    </form>
-    <NuxtLink to="/register">新規登録へ</NuxtLink>
+      </v-btn>
+    </v-form>
+        </v-container>
+        <v-container>
+          <v-btn y="3"
+                 href="register"
+                 label
+                 min-height="20"
+          >新規登録へ
+          </v-btn>
+        </v-container>
+      </v-main>
+    </v-app>
   </div>
 </template>
+
+<style lang="scss" scoped>
+
+</style>

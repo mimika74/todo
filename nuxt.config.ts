@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import vuetify from 'vuetify'
 
 export default defineNuxtConfig({
   app: {
@@ -24,12 +25,19 @@ export default defineNuxtConfig({
     strict: true,
   },
   ssr: false,
+  css: ["vuetify/lib/styles/main.sass"],
+  build: {
+    transpile: ["vuetify"],
+  },
   vite: {
     server: {
       watch: {
         usePolling: true,
       }
-    }
+    },
+    define: {
+      "process.env.DEBUG": false,
+    },
   },
   runtimeConfig: {
     public: {

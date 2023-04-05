@@ -21,7 +21,6 @@ type UserInput = {
 
 const userInput = ref<UserInput>({ name: '', email: '', password: ''})
 
-
 const signUpUser = async () => {
   await signUp(userInput.value.email, userInput.value.password, userInput.value.name)
     .then((userInput) => {
@@ -36,24 +35,43 @@ const signUpUser = async () => {
 
 <template>
   <div>
-    <div>新規登録</div>
-    <form @submit.prevent="signUpUser">
-      <div>
-        <label>お名前</label>
-        <input type="text" v-model="userInput.name">
-      </div>
-      <div>
-        <label>メールアドレス</label>
-        <input type="text" v-model="userInput.email">
-      </div>
-      <div>
-        <label>パスワード</label>
-        <input autocomplete="off" type="password" v-model="userInput.password">
-      </div>
-      <div>
-        <button>登録</button>
-      </div>
-    </form>
-    <NuxtLink to="/login">ログイン</NuxtLink>
+    <v-app>
+    <v-app-bar rounded>
+      <v-toolbar-title>TODO</v-toolbar-title>
+    </v-app-bar>
+      <v-main>
+    <v-container>
+
+    <v-label>新規登録</v-label>
+    <v-form @submit.prevent="signUpUser">
+      <v-row sm="3">
+        <v-col sm="3">
+        <v-label>なまえ</v-label>
+        <v-text-field type="text" v-model="userInput.name" />
+        </v-col>
+        <v-col sm="3">
+        <v-label>メール</v-label>
+        <v-text-field type="text" v-model="userInput.email" />
+        </v-col>
+        <v-col sm="3">
+        <v-label>パスワード</v-label>
+        <v-text-field autocomplete="off" type="password" v-model="userInput.password" />
+        </v-col>
+      </v-row>
+        <v-btn>
+          <button>登録</button>
+        </v-btn>
+    </v-form>
+    </v-container>
+        <v-container>
+          <v-btn y="3"
+            href="/login"
+            label
+            min-height="20"
+          >登録済の方
+          </v-btn>
+        </v-container>
+      </v-main>
+    </v-app>
   </div>
 </template>
